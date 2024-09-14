@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Domino Migration Survey</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1, h2 {
+            color: #333;
+        }
+        .question {
+            margin-bottom: 15px;
+        }
+        select {
+            width: 100%;
+            padding: 5px;
+            margin-top: 5px;
+        }
+        #total {
+            font-weight: bold;
+            margin-top: 20px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Domino Migration Survey</h1>
+        <div id="survey"></div>
+        <div id="total"></div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                category: "IT and Technical Stakeholders",
+                items: [
+                    "What is the current Domino version and its limitations?",
+                    "Can you describe the database schema, design, and structure?",
+                    "What is the estimated volume and size of data to be migrated?",
+                    "How do you ensure data integrity and consistency?",
+                    "What are the existing security settings and authentication mechanisms?",
+                    "What integrations exist with other systems and applications?",
+                    "What are the network and infrastructure requirements?",
+                    "What target platform are you considering for migration?"
+                ]
+            },
+            {
+                category: "Executive and Management Stakeholders",
+                items: [
+                    "What are the migration goals and objectives?",
+                    "What is the expected return on investment (ROI) for the migration?",
+                    "What is the realistic project timeline and milestones?",
+                    "What budget and resources are required for the migration?",
+                    "How will stakeholder expectations be managed and communicated?",
+                    "What change management and user adoption strategies are needed?",
+                    "How will data privacy and compliance be ensured?",
+                    "What potential risks and issues need to be mitigated?"
+                ]
+            },
+            {
+                category: "Additional Questions",
+                items: [
+                    "Are there any plans to replace Lotus Domino with a different platform?",
+                    "How do you plan to surface Domino data in other applications?",
+                    "What data migration strategy are you considering?",
+                    "How will testing and quality assurance be conducted?",
+                    "What training and support will be provided for users and administrators?",
+                    "What post-migration activities are planned?",
+                    "Are there any plans to integrate Artificial Intelligence (AI) into the migration process or as a future state?"
+                ]
+            }
+        ];
+
+        function createSurvey() {
+            const surveyDiv = document.getElementById('survey');
+            questions.forEach(category => {
+                const categoryDiv = document.createElement('div');
+                categoryDiv.innerHTML = `<h2>${category.category}</h2>`;
+                category.items.forEach((question, index) => {
+                    const questionDiv = document.createElement('div');
+                    questionDiv.className = 'question';
+                    questionDiv.innerHTML = `
+                        <p>${question}</p>
+                        <select id="q${index}" onchange="updateTotal()">
+                            ${[...Array(11).keys()].map(i => `<option value="${i}">${i}</option>`).join('')}
+                        </select>
+                    `;
+                    categoryDiv.appendChild(questionDiv);
+                });
+                surveyDiv.appendChild(categoryDiv);
+            });
+        }
+
+        function updateTotal() {
+            const total = [...document.querySelectorAll('select')]
+                .reduce((sum, select) => sum + parseInt(select.value), 0);
+            document.getElementById('total').textContent = `Total Score: ${total}`;
+        }
+
+        createSurvey();
+        updateTotal();
+    </script>
+</body>
+</html>
