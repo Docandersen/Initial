@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Domino AI Survey</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+        }
+        .question {
+            margin-bottom: 20px;
+        }
+        .rating {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+        }
+        .rating input {
+            width: 30px;
+        }
+        #totalScore {
+            font-weight: bold;
+            font-size: 1.2em;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Domino AI Survey</h1>
+    <div id="survey"></div>
+    <div id="totalScore"></div>
+
+    <script>
+        const questions = [
+            {
+                category: "Data Usage",
+                questions: [
+                    "What specific data elements in your Domino databases do you want to utilize in AI applications?",
+                    "How do you envision using your Domino data in AI-driven insights or decision-making?",
+                    "Are there any specific AI use cases or applications you want to support with your Domino data?"
+                ]
+            },
+            {
+                category: "Data Access",
+                questions: [
+                    "How do you want to access your Domino data for AI purposes (e.g., APIs, data connectors, data virtualization)?",
+                    "Are there any specific data formats or structures required for AI consumption?",
+                    "Do you need real-time or near-real-time access to your Domino data for AI applications?"
+                ]
+            },
+            {
+                category: "Data Integration",
+                questions: [
+                    "How do you plan to integrate your Domino data with other data sources or systems for AI purposes?",
+                    "Are there any specific data integration tools or technologies you want to use?",
+                    "Do you need to transform or map your Domino data into a different schema or format for AI consumption?"
+                ]
+            },
+            {
+                category: "Data Security",
+                questions: [
+                    "How do you want to ensure the security and privacy of your Domino data when using it in AI applications?",
+                    "Are there any specific data encryption or access control requirements?",
+                    "Do you need to comply with any regulatory or industry standards for data privacy and security?"
+                ]
+            },
+            {
+                category: "AI Integration",
+                questions: [
+                    "How do you plan to integrate your Domino data with AI models or algorithms?",
+                    "Are there any specific AI frameworks or platforms you want to use?",
+                    "Do you need to customize or train AI models to work with your Domino data?"
+                ]
+            },
+            {
+                category: "Change Management",
+                questions: [
+                    "How do you plan to manage changes to your Domino data or applications to support AI usage?",
+                    "Are there any specific change management processes or tools you want to use?",
+                    "Do you need to update your Domino applications or databases to support AI-driven insights or decision-making?"
+                ]
+            }
+        ];
+
+        function createSurvey() {
+            const surveyContainer = document.getElementById('survey');
+            questions.forEach((category, categoryIndex) => {
+                const categoryDiv = document.createElement('div');
+                categoryDiv.innerHTML = `<h2>${category.category}</h2>`;
+                category.questions.forEach((question, questionIndex) => {
+                    const questionDiv = document.createElement('div');
+                    questionDiv.className = 'question';
+                    questionDiv.innerHTML = `
+                        <p>${question}</p>
+                        <div class="rating">
+                            ${[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => `
+                                <label>
+                                    <input type="radio" name="q${categoryIndex}_${questionIndex}" value="${num}" onchange="updateTotalScore()">
+                                    ${num}
+                                </label>
+                            `).join('')}
+                        </div>
+                    `;
+                    categoryDiv.appendChild(questionDiv);
+                });
+                surveyContainer.appendChild(categoryDiv);
+            });
+        }
+
+        function updateTotalScore() {
+            const inputs = document.querySelectorAll('input[type="radio"]:checked');
+            const totalScore = Array.from(inputs).reduce((sum, input) => sum + parseInt(input.value), 0);
+            document.getElementById('totalScore').textContent = `Total Score: ${totalScore}`;
+        }
+
+        createSurvey();
+    </script>
+</body>
+</html>
