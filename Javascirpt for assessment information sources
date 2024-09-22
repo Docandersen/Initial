@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Questionnaire with Scoring</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .question {
+            margin-bottom: 20px;
+        }
+        select {
+            margin-left: 10px;
+        }
+        #totalScore {
+            font-weight: bold;
+            font-size: 1.2em;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Questionnaire</h1>
+    <div id="questionnaire"></div>
+    <div id="totalScore">Total Score: 0</div>
+
+    <script>
+        const questions = [
+            "How satisfied are you with our product?",
+            "How likely are you to recommend our product to others?",
+            "How would you rate the customer support?",
+            "How easy was it to use our product?",
+            "How well did our product meet your expectations?"
+        ];
+
+        const questionnaireDiv = document.getElementById('questionnaire');
+        const totalScoreDiv = document.getElementById('totalScore');
+
+        function createScoreSelect() {
+            const select = document.createElement('select');
+            for (let i = 1; i <= 10; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = i;
+                select.appendChild(option);
+            }
+            select.addEventListener('change', updateTotalScore);
+            return select;
+        }
+
+        questions.forEach((question, index) => {
+            const questionDiv = document.createElement('div');
+            questionDiv.className = 'question';
+            questionDiv.innerHTML = `<p>Q${index + 1}: ${question}</p>`;
+            questionDiv.appendChild(createScoreSelect());
+            questionnaireDiv.appendChild(questionDiv);
+        });
+
+        function updateTotalScore() {
+            const scores = Array.from(document.querySelectorAll('select')).map(select => parseInt(select.value));
+            const totalScore = scores.reduce((sum, score) => sum + score, 0);
+            totalScoreDiv.textContent = `Total Score: ${totalScore}`;
+        }
+
+        updateTotalScore();
+    </script>
+</body>
+</html>
