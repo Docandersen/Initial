@@ -1,0 +1,143 @@
+import React, { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
+// Sample image data - replace with actual image paths
+const imageDataset = [
+  {
+    aiImage: "/api/placeholder/400/300",
+    realImage: "/api/placeholder/400/300",
+    category: "Dog"
+  },
+  {
+    aiImage: "/api/placeholder/400/300",
+    realImage: "/api/placeholder/400/300", 
+    category: "Landscape"
+  },
+  {
+    aiImage: "/api/placeholder/400/300",
+    realImage: "/api/placeholder/400/300",
+    category: "Portrait"
+  },
+  {
+    aiImage: "/api/placeholder/400/300",
+    realImage: "/api/placeholder/400/300",
+    category: "City Scene"
+  },
+  {
+    aiImage: "/api/placeholder/400/300",
+    realImage: "/api/placeholder/400/300",
+    category: "Food"
+  }
+];
+
+const AIImageDetectionGame = () => {
+  const [currentRound, setCurrentRound] = useState(0);
+  const [score, setScore] = useState({
+    correct: 0,
+    total: 0
+  });
+  const [isAIImage, setIsAIImage] = useState(Math.random() < 0.5);
+  const [gameComplete, setGameComplete] = useState(false);
+
+  const handleImageGuess = (guessedAI) => {
+    // Increment total rounds
+    const newTotal = score.total + 1;
+    
+    // Check if guess is correct
+    const isCorrect = guessedAI === isAIImage;
+    const newCorrect = isCorrect ? score.correct + 1 : score.correct;
+
+    // Update score
+    setScore({
+      correct: newCorrect,
+      total: newTotal
+    });
+
+    // Move to next round or complete game
+    if (currentRound + 1 < imageDataset.length) {
+      setCurrentRound(currentRound + 1);
+      setIsAIImage(Math.random() < 0.5);
+    } else {
+      setGameComplete(true);
+    }
+  };
+
+  const resetGame = () => {
+    setCurrentRound(0);
+    setScore({ correct: 0, total: 0 });
+    setGameComplete(false);
+    setIsAIImage(Math.random() < 0.5);
+  };
+
+  if (gameComplete) {
+    return (
+      <Card className="w-full max-w-md mx-auto mt-10">
+        <CardHeader>
+          <CardTitle>Game Over!</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center">
+            <p className="text-2xl mb-4">Your Score:</p>
+            <p className="text-4xl font-bold mb-6">
+              {score.correct} / {score.total}
+            </p>
+            <Button onClick={resetGame} className="w-full">
+              Play Again
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const currentImage = isAIImage 
+    ? imageDataset[currentRound].aiImage 
+    : imageDataset[currentRound].realImage;
+
+  return (
+    <div className="container mx-auto px-4 py-8 max-w-2xl">
+      <Card>
+        <CardHeader>
+          <CardTitle>AI Image Detection Challenge</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="mb-6 text-center">
+            <p className="mb-4 text-lg">
+              Category: {imageDataset[currentRound].category}
+            </p>
+            <img 
+              src={currentImage} 
+              alt="Challenge" 
+              className="mx-auto max-h-96 object-contain"
+            />
+          </div>
+          
+          <div className="flex gap-4">
+            <Button 
+              onClick={() => handleImageGuess(true)} 
+              className="flex-1"
+              variant="destructive"
+            >
+              AI Generated
+            </Button>
+            <Button 
+              onClick={() => handleImageGuess(false)} 
+              className="flex-1"
+              variant="default"
+            >
+              Real Image
+            </Button>
+          </div>
+
+          <div className="mt-4 text-center">
+            <p>Round {currentRound + 1} of {imageDataset.length}</p>
+            <p>Score: {score.correct} / {score.total}</p>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+export default AIImageDetectionGame;
