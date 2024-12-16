@@ -1,0 +1,95 @@
+import SwiftUI
+
+struct ContentView: View {
+    @State private var name: String = ""
+    @State private var topic: String = ""
+    @State private var questions: [String] = []
+    @State private var scores: [Int] = Array(repeating: 0, count: 10)
+    @State private var currentQuestionIndex: Int = 0
+    @State private var totalScore: Int = 0
+    @State private var isSurveyCompleted: Bool = false
+
+    var body: some View {
+        VStack {
+            if !isSurveyCompleted {
+                if currentQuestionIndex == 0 {
+                    // User Input
+                    TextField("Enter your name", text: $name)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .padding()
+
+                    TextField("What topic are you interested in?", text: $topic)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .padding()
+
+                    Button("Start Survey") {
+                        startSurvey()
+                    }
+                    .padding()
+                } else {
+                    // Display Questions
+                    Text(questions[currentQuestionIndex])
+                        .font(.headline)
+                        .padding()
+
+                    Slider(value: Binding(
+                        get: { Double(scores[currentQuestionIndex]) },
+                        set: { scores[currentQuestionIndex] = Int($0) }
+                    ), in: 1...10, step: 1)
+                    .padding()
+
+                    Button("Next") {
+                        nextQuestion()
+                    }
+                    .padding()
+                }
+            } else {
+                // Survey Results
+                Text("Your Total Score: \(totalScore)")
+                    .font(.largeTitle)
+                    .padding()
+
+                Button("Restart") {
+                    resetSurvey()
+                }
+                .padding()
+            }
+        }
+    }
+
+    func startSurvey() {
+        // Example questions for a topic (replace with dynamic data)
+        let sampleQuestions = [
+            "How often do you use this concept?",
+            "Can you explain this concept to others?",
+            "Do you apply this concept in your daily life?",
+            "Have you studied this concept formally?",
+            "Can you identify examples of this concept?"
+        ]
+        questions = sampleQuestions.shuffled().prefix(10).map { $0 }
+        currentQuestionIndex = 0
+        isSurveyCompleted = false
+    }
+
+    func nextQuestion() {
+        if currentQuestionIndex < 9 {
+            currentQuestionIndex += 1
+        } else {
+            calculateTotalScore()
+        }
+    }
+
+    func calculateTotalScore() {
+        totalScore = scores.reduce(0, +)
+        isSurveyCompleted = true
+    }
+
+    func resetSurvey() {
+        name = ""
+        topic = ""
+        scores = Array(repeating: 0, count: 10)
+        currentQuestionIndex = 0
+        totalScore = 0
+        isSurveyCompleted = false
+    }
+}
