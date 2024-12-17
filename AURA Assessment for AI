@@ -1,0 +1,275 @@
+// Project Structure:
+// /src
+//   /components
+//   /screens
+//   /data
+//   /utils
+//   App.js
+
+// src/data/aiQuestions.js
+export const AI_QUESTIONS = [
+  {
+    category: 'Basic AI Concepts',
+    questions: [
+      {
+        text: 'How well do you understand what Artificial Intelligence (AI) fundamentally means?',
+        minLabel: 'No understanding',
+        maxLabel: 'Comprehensive definition and nuanced comprehension'
+      },
+      {
+        text: 'Can you explain the difference between Artificial Narrow Intelligence (ANI), Artificial General Intelligence (AGI), and Artificial Super Intelligence (ASI)?',
+        minLabel: 'No knowledge',
+        maxLabel: 'Detailed understanding of distinctions'
+      },
+      // ... (add all questions from the original document)
+    ]
+  },
+  // Add other categories similarly
+];
+
+// src/components/QuestionCard.js
+import React, { useState } from 'react';
+import { View, Text, Slider, StyleSheet } from 'react-native';
+
+export const QuestionCard = ({ question, onScoreChange }) => {
+  const [score, setScore] = useState(1);
+
+  const handleScoreChange = (value) => {
+    setScore(Math.round(value));
+    onScoreChange(Math.round(value));
+  };
+
+  return (
+    <View style={styles.card}>
+      <Text style={styles.questionText}>{question.text}</Text>
+      <View style={styles.sliderContainer}>
+        <Text style={styles.labelText}>{question.minLabel}</Text>
+        <Slider
+          style={styles.slider}
+          minimumValue={1}
+          maximumValue={10}
+          step={1}
+          value={score}
+          onValueChange={handleScoreChange}
+          minimumTrackTintColor="#007AFF"
+          maximumTrackTintColor="#000000"
+        />
+        <Text style={styles.labelText}>{question.maxLabel}</Text>
+      </View>
+      <Text style={styles.scoreText}>Current Score: {score}</Text>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  card: {
+    backgroundColor: '#F8F8F8',
+    borderRadius: 10,
+    padding: 15,
+    marginVertical: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3
+  },
+  questionText: {
+    fontSize: 16,
+    marginBottom: 10,
+    fontWeight: '600'
+  },
+  sliderContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between'
+  },
+  slider: {
+    flex: 1,
+    marginHorizontal: 10
+  },
+  labelText: {
+    fontSize: 12,
+    color: '#666'
+  },
+  scoreText: {
+    textAlign: 'center',
+    marginTop: 10,
+    fontWeight: 'bold'
+  }
+});
+
+// src/screens/AssessmentScreen.js
+import React, { useState } from 'react';
+import { View, Text, ScrollView, Button, StyleSheet } from 'react-native';
+import { AI_QUESTIONS } from '../data/aiQuestions';
+import { QuestionCard } from '../components/QuestionCard';
+
+export const AssessmentScreen = ({ navigation }) => {
+  const [scores, setScores] = useState({});
+  const [isComplete, setIsComplete] = useState(false);
+
+  const handleScoreChange = (categoryIndex, questionIndex, score) => {
+    const newScores = {
+      ...scores,
+      [`${categoryIndex}-${questionIndex}`]: score
+    };
+    setScores(newScores);
+  };
+
+  const calculateTotalScore = () => {
+    const allScores = Object.values(scores);
+    const totalScore = allScores.reduce((sum, score) => sum + score, 0);
+    const averageScore = totalScore / allScores.length;
+    return Math.round(averageScore);
+  };
+
+  const submitAssessment = () => {
+    const totalScore = calculateTotalScore();
+    navigation.navigate('ResultScreen', { score: totalScore });
+  };
+
+  return (
+    <View style={styles.container}>
+      <ScrollView>
+        {AI_QUESTIONS.map((category, categoryIndex) => (
+          <View key={categoryIndex}>
+            <Text style={styles.categoryTitle}>{category.category}</Text>
+            {category.questions.map((question, questionIndex) => (
+              <QuestionCard
+                key={questionIndex}
+                question={question}
+                onScoreChange={(score) => handleScoreChange(categoryIndex, questionIndex, score)}
+              />
+            ))}
+          </View>
+        ))}
+        <Button 
+          title="Submit Assessment" 
+          onPress={submitAssessment}
+          color="#007AFF"
+        />
+      </ScrollView>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 15,
+    backgroundColor: '#FFFFFF'
+  },
+  categoryTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginVertical: 15,
+    textAlign: 'center'
+  }
+});
+
+// src/screens/ResultScreen.js
+import React from 'react';
+import { View, Text, StyleSheet, Button } from 'react-native';
+
+export const ResultScreen = ({ route, navigation }) => {
+  const { score } = route.params;
+
+  const getScoreDescription = () => {
+    if (score <= 2) return 'Minimal Knowledge';
+    if (score <= 4) return 'Basic Awareness';
+    if (score <= 6) return 'Fundamental Understanding';
+    if (score <= 8) return 'Strong Comprehension';
+    return 'Expert-Level Knowledge';
+  };
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>AI Knowledge Assessment Result</Text>
+      <View style={styles.scoreContainer}>
+        <Text style={styles.scoreText}>Your Score: {score}/10</Text>
+        <Text style={styles.descriptionText}>{getScoreDescription()}</Text>
+      </View>
+      <Text style={styles.recommendationText}>
+        {score <= 4 && "Consider taking some introductory AI courses or reading beginner-friendly resources."}
+        {score > 4 && score <= 7 && "You have a good foundation. Continue learning and exploring AI technologies."}
+        {score > 7 && "You demonstrate advanced AI knowledge. Stay updated with the latest research and developments."}
+      </Text>
+      <Button 
+        title="Retake Assessment" 
+        onPress={() => navigation.goBack()}
+        color="#007AFF"
+      />
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: '#FFFFFF'
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 20
+  },
+  scoreContainer: {
+    alignItems: 'center',
+    marginBottom: 20
+  },
+  scoreText: {
+    fontSize: 36,
+    fontWeight: 'bold',
+    color: '#007AFF'
+  },
+  descriptionText: {
+    fontSize: 18,
+    color: '#333',
+    marginTop: 10
+  },
+  recommendationText: {
+    textAlign: 'center',
+    marginBottom: 20,
+    fontSize: 16,
+    color: '#666'
+  }
+});
+
+// App.js
+import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import { AssessmentScreen } from './src/screens/AssessmentScreen';
+import { ResultScreen } from './src/screens/ResultScreen';
+
+const Stack = createStackNavigator();
+
+export default function App() {
+  return (
+    <NavigationContainer>
+      <Stack.Navigator initialRouteName="Assessment">
+        <Stack.Screen 
+          name="Assessment" 
+          component={AssessmentScreen} 
+          options={{ title: 'AI Knowledge Assessment' }}
+        />
+        <Stack.Screen 
+          name="ResultScreen" 
+          component={ResultScreen} 
+          options={{ title: 'Your Results' }}
+        />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+}
+
+// Additional setup requirements (package.json dependencies):
+// - react-native
+// - @react-navigation/native
+// - @react-navigation/stack
+// - react-native-gesture-handler
+// - react-native-screens
+// - react-native-safe-area-context
