@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CO₂ Emissions Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 400px;
+            margin: auto;
+            text-align: center;
+        }
+        label, select, input, button {
+            display: block;
+            margin: 10px auto;
+        }
+        input, select, button {
+            padding: 10px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>CO₂ Emissions Calculator</h1>
+        <label for="energyType">Select Energy Type:</label>
+        <select id="energyType">
+            <option value="0.92">Electricity (~0.92 lbs CO₂/kWh)</option>
+            <option value="0.0053">Natural Gas (~0.0053 metric tons CO₂/therm)</option>
+            <option value="22.38">Heating Oil (~22.38 lbs CO₂/gallon)</option>
+            <option value="12.17">Propane (~12.17 lbs CO₂/gallon)</option>
+        </select>
+
+        <label for="amountUsed">Enter Energy Used:</label>
+        <input type="number" id="amountUsed" placeholder="Enter amount used" />
+
+        <button onclick="calculateCO2()">Calculate CO₂ Emissions</button>
+
+        <h2 id="result">Your CO₂ Emissions: </h2>
+    </div>
+
+    <script>
+        function calculateCO2() {
+            // Get selected energy type and amount used
+            const energyType = document.getElementById('energyType').value;
+            const amountUsed = document.getElementById('amountUsed').value;
+
+            if (!amountUsed || amountUsed <= 0) {
+                document.getElementById('result').textContent = "Please enter a valid energy usage amount.";
+                return;
+            }
+
+            // Convert the energy type value (lbs or metric tons)
+            let emissions = energyType * amountUsed;
+
+            // If the energy type is natural gas (metric tons), convert to lbs for consistency
+            if (energyType === "0.0053") {
+                emissions *= 2204.62; // Convert metric tons to lbs
+            }
+
+            // Display the result
+            document.getElementById('result').textContent = `Your CO₂ Emissions: ${emissions.toFixed(2)} lbs.`;
+        }
+    </script>
+</body>
+</html>
