@@ -1,0 +1,207 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+}
+
+android {
+    compileSdk 34
+    defaultConfig {
+        applicationId "com.example.ikms"
+        minSdk 21
+        targetSdk 34
+        versionCode 1
+        versionName "1.0"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    implementation "androidx.core:core-ktx:1.12.0"
+    implementation "androidx.compose.ui:ui:1.5.0"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.6.1"
+    implementation "androidx.navigation:navigation-compose:2.7.2"
+    implementation "com.google.accompanist:accompanist-systemuicontroller:0.31.1-alpha"
+    implementation "com.squareup.retrofit2:retrofit:2.9.0"
+    implementation "com.squareup.retrofit2:converter-gson:2.9.0"
+    implementation "com.google.firebase:firebase-auth-ktx:22.1.2"
+    implementation "com.google.android.material:material:1.9.0"
+}
+import androidx.compose.material.*
+import androidx.compose.runtime.Composable
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+
+@Composable
+fun AppNavigation() {
+    val navController = rememberNavController()
+    NavHost(navController, startDestination = "login") {
+        composable("login") { LoginScreen(navController) }
+        composable("dashboard") { DashboardScreen(navController) }
+    }
+}
+import androidx.compose.material.*
+import androidx.compose.runtime.Composable
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+
+@Composable
+fun AppNavigation() {
+    val navController = rememberNavController()
+    NavHost(navController, startDestination = "login") {
+        composable("login") { LoginScreen(navController) }
+        composable("dashboard") { DashboardScreen(navController) }
+    }
+}
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import com.google.firebase.auth.FirebaseAuth
+
+@Composable
+fun LoginScreen(navController: NavController) {
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    Column(
+        modifier = Modifier.fillMaxSize().padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        TextField(
+            value = email,
+            onValueChange = { email = it },
+            label = { Text("Email") },
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        TextField(
+            value = password,
+            onValueChange = { password = it },
+            label = { Text("Password") },
+            modifier = Modifier.fillMaxWidth(),
+            visualTransformation = PasswordVisualTransformation()
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Button(onClick = {
+            FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password)
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        navController.navigate("dashboard")
+                    } else {
+                        errorMessage = task.exception?.message
+                    }
+                }
+        }) {
+            Text("Login")
+        }
+        errorMessage?.let {
+            Text(text = it, color = MaterialTheme.colors.error)
+        }
+    }
+}
+@Composable
+fun DashboardScreen(navController: NavController) {
+    Scaffold(
+        topBar = {
+            TopAppBar(title = { Text("IKMS Dashboard") })
+        }
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize().padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text("Welcome to IKMS!", style = MaterialTheme.typography.h4)
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(onClick = {
+                // Placeholder for AI functionality
+            }) {
+                Text("Perform AI-Assisted Search")
+            }
+        }
+    }
+}
+@Composable
+fun DashboardScreen(navController: NavController) {
+    Scaffold(
+        topBar = {
+            TopAppBar(title = { Text("IKMS Dashboard") })
+        }
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize().padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text("Welcome to IKMS!", style = MaterialTheme.typography.h4)
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(onClick = {
+                // Placeholder for AI functionality
+            }) {
+                Text("Perform AI-Assisted Search")
+            }
+        }
+    }
+}
+@Composable
+fun DashboardScreen(navController: NavController) {
+    Scaffold(
+        topBar = {
+            TopAppBar(title = { Text("IKMS Dashboard") })
+        }
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize().padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text("Welcome to IKMS!", style = MaterialTheme.typography.h4)
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(onClick = {
+                // Placeholder for AI functionality
+            }) {
+                Text("Perform AI-Assisted Search")
+            }
+        }
+    }
+}
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import com.example.ikms.ui.theme.IKMSTheme
+
+class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            IKMSTheme {
+                AppNavigation()
+            }
+        }
+    }
+}
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material.*
+import androidx.compose.runtime.Composable
+
+@Composable
+fun IKMSTheme(content: @Composable () -> Unit) {
+    val darkTheme = isSystemInDarkTheme()
+    MaterialTheme(
+        colors = if (darkTheme) darkColors() else lightColors(),
+        typography = Typography,
+        shapes = Shapes,
+        content = content
+    )
+}
