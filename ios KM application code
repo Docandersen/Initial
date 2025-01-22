@@ -1,0 +1,198 @@
+import SwiftUI
+import Firebase
+import CoreData
+
+@main
+struct IKMSApp: App {
+    // Initialize Firebase
+    init() {
+        FirebaseApp.configure()
+    }
+
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+                .environmentObject(AuthViewModel())
+        }
+    }
+}
+
+// MARK: - Authentication ViewModel
+class AuthViewModel: ObservableObject {
+    @Published var user: User? = nil
+    @Published var isAuthenticated = false
+    @Published var errorMessage: String? = nil
+
+    init() {
+        user = Auth.auth().currentUser
+        isAuthenticated = user != nil
+    }
+
+    func login(email: String, password: String) {
+        Auth.auth().signIn(withEmail: email, password: password) { [weak self] result, error in
+            if let error = error {
+                self?.errorMessage = error.localizedDescription
+            } else {
+                self?.user = result?.user
+                self?.isAuthenticated = true
+            }
+        }
+    }
+
+    func logout() {
+        try? Auth.auth().signOut()
+        self.user = nil
+        self.isAuthenticated = false
+    }
+}
+
+// MARK: - Core Data Manager
+class CoreDataManager {
+    static let shared = CoreDataManager()
+
+    lazy var persistentContainer: NSPersistentContainer = {
+        let container = NSPersistentContainer(name: "IKMSModel")
+        container.loadPersistentStores { _, error in
+            if let error = error {
+                fatalError("Failed to load Core Data stack: \(error)")
+            }
+        }
+        return container
+    }()
+
+    var context: NSManagedObjectContext {
+        persistentContainer.viewContext
+    }
+}
+
+// MARK: - Main Content View
+struct ContentView: View {
+    @EnvironmentObject var authVM: AuthViewModel
+
+    var body: some View {
+        if authVM.isAuthenticated {
+            DashboardView()
+        } else {
+            LoginView()
+        }
+    }
+}
+
+// MARK: - Login View
+struct LoginView: View {
+    @EnvironmentObject var authVM: AuthViewModel
+    @State private var email = ""
+    @State private var password = ""
+
+    var body: some View {
+        VStack {
+            Text("IKMS Login").font(.largeTitle).padding()
+
+            TextField("Email", text: $email)
+                .autocapitalization(.none)
+                .padding()
+                .background(Color(.secondarySystemBackground))
+                .cornerRadius(10)
+
+            SecureField("Password", text: $password)
+                .padding()
+                .background(Color(.secondarySystemBackground))
+                .cornerRadius(10)
+
+            Button(action: {
+                authVM.login(email: email, password: password)
+            }) {
+                Text("Login")
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.blue)
+                    .cornerRadius(10)
+            }
+            .padding()
+
+            if let errorMessage = authVM.errorMessage {
+                Text(errorMessage)
+                    .foregroundColor(.red)
+                    .multilineTextAlignment(.center)
+                    .padding()
+            }
+        }
+        .padding()
+    }
+}
+
+// MARK: - Dashboard View
+struct DashboardView: View {
+    var body: some View {
+        NavigationView {
+            List {
+                NavigationLink(destination: SearchView()) {
+                    Text("Search Knowledge Base")
+                }
+                NavigationLink(destination: CollaborationView()) {
+                    Text("Collaboration Tools")
+                }
+                NavigationLink(destination: SettingsView()) {
+                    Text("Settings")
+                }
+            }
+            .navigationTitle("Dashboard")
+        }
+    }
+}
+
+// MARK: - Search View
+struct SearchView: View {
+    @State private var query = ""
+    @State private var results: [String] = [] // Mocked results.
+
+    var body: some View {
+        VStack {
+            TextField("Search...", text: $query)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .padding()
+
+            Button(action: performSearch) {
+                Text("Search")
+                    .foregroundColor(.white)
+                    .padding()
+                    .background(Color.green)
+                    .cornerRadius(10)
+            }
+
+            List(results, id: \.self) { result in
+                Text(result)
+            }
+        }
+        .padding()
+    }
+
+    private func performSearch() {
+        // Simulate AI-powered search or call backend API
+        results = ["Result 1 for \(query)", "Result 2 for \(query)", "Result 3 for \(query)"]
+    }
+}
+
+// MARK: - Collaboration View
+struct CollaborationView: View {
+    var body: some View {
+        Text("Collaboration Tools Coming Soon!")
+            .font(.title)
+            .padding()
+    }
+}
+
+// MARK: - Settings View
+struct SettingsView: View {
+    @AppStorage("isDarkMode") private var isDarkMode = false
+
+    var body: some View {
+        Form {
+            Toggle("Dark Mode", isOn: $isDarkMode)
+        }
+        .onChange(of: isDarkMode) { _ in
+            UIApplication.shared.windows.first?.overrideUserInterfaceStyle = isDarkMode ? .dark : .light
+        }
+    }
+}
