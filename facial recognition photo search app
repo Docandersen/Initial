@@ -1,0 +1,227 @@
+// App.js
+import React, { useState, useEffect } from 'react';
+import './App.css';
+
+function App() {
+  const [photos, setPhotos] = useState([]);
+  const [searchName, setSearchName] = useState('');
+  const [file, setFile] = useState(null);
+  const [processing, setProcessing] = useState(false);
+  const [message, setMessage] = useState('');
+  const [previewUrl, setPreviewUrl] = useState(null);
+
+  // Load saved photos from localStorage on mount
+  useEffect(() => {
+    const savedPhotos = localStorage.getItem('faceRecognitionPhotos');
+    if (savedPhotos) {
+      setPhotos(JSON.parse(savedPhotos));
+    }
+  }, []);
+
+  // Save photos to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('faceRecognitionPhotos', JSON.stringify(photos));
+  }, [photos]);
+
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files[0];
+    if (selectedFile) {
+      setFile(selectedFile);
+      const fileReader = new FileReader();
+      fileReader.onload = () => {
+        setPreviewUrl(fileReader.result);
+      };
+      fileReader.readAsDataURL(selectedFile);
+    }
+  };
+
+  const handleNameSubmit = (e) => {
+    e.preventDefault();
+    
+    if (!file || !searchName.trim()) {
+      setMessage('Please select a file and enter a name');
+      return;
+    }
+    
+    setProcessing(true);
+    setMessage('Processing image...');
+    
+    // Simulate API call for face recognition
+    setTimeout(() => {
+      // Get geolocation
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const { latitude, longitude } = position.coords;
+            
+            // Create a new photo entry
+            const newPhoto = {
+              id: Date.now(),
+              name: searchName,
+              image: previewUrl,
+              location: { latitude, longitude },
+              date: new Date().toISOString()
+            };
+            
+            setPhotos(prevPhotos => [...prevPhotos, newPhoto]);
+            setMessage(`Successfully identified ${searchName}!`);
+            setProcessing(false);
+            setFile(null);
+            setPreviewUrl(null);
+            setSearchName('');
+            
+            // Simulate finding similar photos
+            simulateFindingSimilarPhotos(searchName);
+          },
+          (error) => {
+            setMessage(`Geolocation error: ${error.message}`);
+            setProcessing(false);
+          }
+        );
+      } else {
+        setMessage('Geolocation is not supported by this browser');
+        setProcessing(false);
+      }
+    }, 2000);
+  };
+
+  const simulateFindingSimilarPhotos = (name) => {
+    // In a real app, this would call a face recognition API service
+    // For this demo, we'll just simulate finding photos after a delay
+    setTimeout(() => {
+      setMessage(`Found additional photos of ${name} from external sources`);
+      
+      // Add some dummy photos with the same name
+      const dummyPhotos = [
+        {
+          id: Date.now() + 1,
+          name: name,
+          image: `https://source.unsplash.com/100x100/?person&${Math.random()}`,
+          location: { latitude: 40.7128, longitude: -74.0060 },
+          date: new Date().toISOString(),
+          source: 'External'
+        },
+        {
+          id: Date.now() + 2,
+          name: name,
+          image: `https://source.unsplash.com/100x100/?person&${Math.random()}`,
+          location: { latitude: 34.0522, longitude: -118.2437 },
+          date: new Date().toISOString(),
+          source: 'External'
+        }
+      ];
+      
+      setPhotos(prevPhotos => [...prevPhotos, ...dummyPhotos]);
+    }, 4000);
+  };
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    setMessage(`Searching for photos of ${searchName}...`);
+    
+    // In a real app, this might trigger another API call to refresh results
+    setTimeout(() => {
+      setMessage(`Showing results for ${searchName}`);
+    }, 1000);
+  };
+
+  // Filter photos by the searched name
+  const filteredPhotos = searchName.trim() ? 
+    photos.filter(photo => photo.name.toLowerCase().includes(searchName.toLowerCase())) : 
+    photos;
+
+  return (
+    <div className="app">
+      <header>
+        <h1>Face Recognition Photo Search</h1>
+      </header>
+      
+      <div className="main-container">
+        <div className="upload-section">
+          <h2>Identify a Person</h2>
+          <form onSubmit={handleNameSubmit}>
+            <div className="file-input">
+              <label htmlFor="photo-upload" className="file-label">
+                Select Photo
+              </label>
+              <input
+                id="photo-upload"
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="hidden-input"
+              />
+            </div>
+            
+            {previewUrl && (
+              <div className="preview">
+                <img src={previewUrl} alt="Preview" className="preview-image" />
+              </div>
+            )}
+            
+            <div className="name-input">
+              <input
+                type="text"
+                placeholder="Enter person's name"
+                value={searchName}
+                onChange={(e) => setSearchName(e.target.value)}
+                className="text-input"
+              />
+            </div>
+            
+            <button 
+              type="submit" 
+              className="submit-button" 
+              disabled={processing || !file}
+            >
+              {processing ? 'Processing...' : 'Identify Person'}
+            </button>
+          </form>
+        </div>
+        
+        <div className="search-section">
+          <h2>Search Saved Photos</h2>
+          <form onSubmit={handleSearch}>
+            <div className="search-input">
+              <input
+                type="text"
+                placeholder="Search by name"
+                value={searchName}
+                onChange={(e) => setSearchName(e.target.value)}
+                className="text-input"
+              />
+              <button type="submit" className="search-button">Search</button>
+            </div>
+          </form>
+        </div>
+      </div>
+      
+      {message && <div className="message">{message}</div>}
+      
+      <div className="results-section">
+        <h2>Results</h2>
+        {filteredPhotos.length > 0 ? (
+          <div className="photo-grid">
+            {filteredPhotos.map(photo => (
+              <div key={photo.id} className="photo-card">
+                <img src={photo.image} alt={photo.name} className="thumbnail" />
+                <div className="photo-info">
+                  <h3>{photo.name}</h3>
+                  <p>
+                    Location: {photo.location.latitude.toFixed(2)}, {photo.location.longitude.toFixed(2)}
+                  </p>
+                  <p>Date: {new Date(photo.date).toLocaleDateString()}</p>
+                  {photo.source && <p>Source: {photo.source}</p>}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p>No photos found</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default App;
