@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multilingual Hello World</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+        }
+
+        .hello-container {
+            text-align: center;
+            position: relative;
+        }
+
+        .hello-text {
+            font-size: 4rem;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+            animation: flash 1s ease-in-out infinite alternate,
+                       rotate 8s linear infinite,
+                       glow 2s ease-in-out infinite alternate;
+            transition: all 0.5s ease;
+            transform-origin: center;
+        }
+
+        .language-info {
+            margin-top: 20px;
+            font-size: 1.2rem;
+            color: #fff;
+            opacity: 0.8;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        @keyframes flash {
+            0% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            100% {
+                opacity: 0.3;
+                transform: scale(1.05);
+            }
+        }
+
+        @keyframes rotate {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes glow {
+            0% {
+                text-shadow: 0 0 20px rgba(255, 255, 255, 0.5),
+                            0 0 30px rgba(255, 255, 255, 0.3),
+                            0 0 40px rgba(255, 255, 255, 0.2);
+            }
+            100% {
+                text-shadow: 0 0 30px rgba(255, 255, 255, 0.8),
+                            0 0 50px rgba(255, 255, 255, 0.6),
+                            0 0 70px rgba(255, 255, 255, 0.4);
+            }
+        }
+
+        .controls {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+        }
+
+        .control-btn {
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .paused {
+            animation-play-state: paused !important;
+        }
+
+        @media (max-width: 768px) {
+            .hello-text {
+                font-size: 2.5rem;
+            }
+            .controls {
+                bottom: 20px;
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="hello-container">
+        <div class="hello-text" id="helloText">Hello, World!</div>
+        <div class="language-info" id="languageInfo">English</div>
+    </div>
+
+    <div class="controls">
+        <button class="control-btn" onclick="toggleAnimation()">Pause/Resume</button>
+        <button class="control-btn" onclick="nextLanguage()">Next Language</button>
+        <button class="control-btn" onclick="toggleSpeed()">Speed</button>
+    </div>
+
+    <script>
+        const greetings = [
+            { text: "Hello, World!", lang: "English" },
+            { text: "¡Hola, Mundo!", lang: "Spanish" },
+            { text: "Bonjour, Monde!", lang: "French" },
+            { text: "Hallo, Welt!", lang: "German" },
+            { text: "Ciao, Mondo!", lang: "Italian" },
+            { text: "Olá, Mundo!", lang: "Portuguese" },
+            { text: "Привет, Мир!", lang: "Russian" },
+            { text: "你好，世界！", lang: "Chinese" },
+            { text: "こんにちは、世界！", lang: "Japanese" },
+            { text: "안녕하세요, 세계!", lang: "Korean" },
+            { text: "مرحبا بالعالم!", lang: "Arabic" },
+            { text: "नमस्ते, दुनिया!", lang: "Hindi" },
+            { text: "Hej, Världen!", lang: "Swedish" },
+            { text: "Hei, Verden!", lang: "Norwegian" },
+            { text: "Γεια σας, Κόσμε!", lang: "Greek" },
+            { text: "Merhaba, Dünya!", lang: "Turkish" },
+            { text: "Sawubona, Mhlaba!", lang: "Zulu" },
+            { text: "Halo, Dunia!", lang: "Indonesian" },
+            { text: "สวัสดีครับ/ค่ะ โลก!", lang: "Thai" },
+            { text: "Chào thế giới!", lang: "Vietnamese" }
+        ];
+
+        let currentIndex = 0;
+        let isPaused = false;
+        let currentSpeed = 3000; // milliseconds
+        let rotationInterval;
+        let speedLevel = 1; // 1 = normal, 2 = fast, 3 = very fast
+
+        const helloText = document.getElementById('helloText');
+        const languageInfo = document.getElementById('languageInfo');
+
+        function updateGreeting() {
+            const greeting = greetings[currentIndex];
+            helloText.textContent = greeting.text;
+            languageInfo.textContent = greeting.lang;
+            currentIndex = (currentIndex + 1) % greetings.length;
+        }
+
+        function startRotation() {
+            if (rotationInterval) {
+                clearInterval(rotationInterval);
+            }
+            rotationInterval = setInterval(updateGreeting, currentSpeed);
+        }
+
+        function toggleAnimation() {
+            isPaused = !isPaused;
+            const elements = document.querySelectorAll('.hello-text');
+            elements.forEach(el => {
+                if (isPaused) {
+                    el.classList.add('paused');
+                    clearInterval(rotationInterval);
+                } else {
+                    el.classList.remove('paused');
+                    startRotation();
+                }
+            });
+        }
+
+        function nextLanguage() {
+            updateGreeting();
+        }
+
+        function toggleSpeed() {
+            speedLevel = (speedLevel % 3) + 1;
+            switch(speedLevel) {
+                case 1:
+                    currentSpeed = 3000; // Normal
+                    break;
+                case 2:
+                    currentSpeed = 1500; // Fast
+                    break;
+                case 3:
+                    currentSpeed = 750; // Very fast
+                    break;
+            }
+            if (!isPaused) {
+                startRotation();
+            }
+            
+            // Visual feedback
+            const speedBtn = event.target;
+            speedBtn.textContent = `Speed (${speedLevel}x)`;
+            setTimeout(() => {
+                speedBtn.textContent = 'Speed';
+            }, 1000);
+        }
+
+        // Start the rotation
+        startRotation();
+
+        // Add some extra sparkle effects
+        document.addEventListener('DOMContentLoaded', function() {
+            // Create floating particles
+            for (let i = 0; i < 20; i++) {
+                setTimeout(() => {
+                    createParticle();
+                }, i * 200);
+            }
+        });
+
+        function createParticle() {
+            const particle = document.createElement('div');
+            particle.style.position = 'fixed';
+            particle.style.width = '4px';
+            particle.style.height = '4px';
+            particle.style.backgroundColor = 'rgba(255, 255, 255, 0.7)';
+            particle.style.borderRadius = '50%';
+            particle.style.pointerEvents = 'none';
+            particle.style.left = Math.random() * window.innerWidth + 'px';
+            particle.style.top = Math.random() * window.innerHeight + 'px';
+            particle.style.animation = 'float 4s ease-in-out infinite';
+            
+            document.body.appendChild(particle);
+            
+            setTimeout(() => {
+                particle.remove();
+            }, 4000);
+        }
+
+        // Add floating animation for particles
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes float {
+                0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 1; }
+                50% { transform: translateY(-20px) rotate(180deg); opacity: 0.5; }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Continuously create particles
+        setInterval(createParticle, 2000);
+    </script>
+</body>
+</html>
